@@ -4,11 +4,6 @@ from random import randint
 import streamlit as st
 from pymongo import MongoClient
 
-st.subheader("Противник")
-bot_res = st.container(height=100)
-player_res = st.container(height=100)
-st.subheader("Ты")
-
 source = {0: "🪨", 1: "✂️", 2: "📄"}
 
 
@@ -24,6 +19,8 @@ if "username" not in st.session_state:
     ask_username()
 
 player = st.session_state.get("username", "Default")
+if "winrate" not in st.session_state:
+    st.session_state.winrate = {"wins": 0, "loses": 0}
 
 
 @st.cache_resource
@@ -34,17 +31,29 @@ def get_base():
     return base
 
 
+st.subheader("Противник")
+bot_res = st.container(height=100)
+player_res = st.container(height=100)
+st.subheader("Ты")
+am = st.session_state.winrate["wins"] + st.session_state.winrate["loses"]
+if am > 0:
+    st.write(f"Wins: {st.session_state.winrate['wins'] / am:.1%}")
+else:
+    st.write("Wins:")
+
 def game(player_move: int):
     bot_move = get_move()
     if player_move == bot_move:
         result = 0
     elif (player_move - bot_move) in (-1, 2):
         result = 1
+        st.session_state.winrate["wins"] += 1
         player_res.balloons()
     else:
         result = -1
+        st.session_state.winrate["loses"] += 1
         player_res.snow()
-
+    
     base.insert_one(
         {
             "player": player,
