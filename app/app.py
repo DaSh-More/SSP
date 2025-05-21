@@ -2,7 +2,6 @@ from datetime import datetime
 from random import randint
 
 import streamlit as st
-from bestconfig import Config
 from pymongo import MongoClient
 
 st.subheader("Противник")
@@ -29,8 +28,7 @@ player = st.session_state.get("username", "Default")
 
 @st.cache_resource
 def get_base():
-    config = Config()
-    client = MongoClient(config.get("DB_URL"))
+    client = MongoClient(st.secrets.get("DB_URL"))
     db = client["rock_paper_scissors"]
     base = db["game_results"]
     return base
